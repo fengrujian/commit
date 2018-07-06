@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.imooc.dao.BusinesserDao">
+     
+     <resultMap type="BusinesserDto" id="BusinesserResultMap">
+		<id column="id" property="id"/>
+		<result column="businesser_name" property="name"/>
+		<result column="number" property="number"/>
+		<result column="sys_user_id" property="sys_userId"/>
+            
+            <association property="user" javaType="User">
+			   <result column="user_name" property="name"/>
+		       <result column="ch_name" property="chName"/>
+		          <association property="group" javaType="Group">
+			         <result column="group_name" property="name"/>
+		          </association>
+		    </association>
+		   
+	 </resultMap>
+
+
+	<select id="search_Businesser" resultMap="BusinesserResultMap">
+        select ber.id,ber.name businesser_name,ber.number,ber.sys_user_id,user.name user_name,user.ch_name,g.name group_name
+              from  businesser ber 
+              left join  sys_user user on ber.id = user.businesser_id
+              left join  sys_group g on g.id = user.group_id
+         <where>
+             <if test="name!=null and name!=''">
+                ber.name like '%' #{name} '%'
+             </if>
+          </where>
+    </select>
+    
+	   
+	<insert id="insertbusinesser">
+		 insert into businesser(name,number) values(#{name},#{number})
+	</insert>
+	   
+	<delete id="delbusinesser">
+	   delete from businesser where id = #{id}
+    </delete>
+    
+	 
+    <select id="getBusinesserById" resultType="Businesser">
+        select * from  businesser where id= #{id}             
+    </select>
+    
+    <update id="updatebusinesser">
+        update businesser set name = #{name} where id = #{id}
+    </update>
+  
+</mapper>

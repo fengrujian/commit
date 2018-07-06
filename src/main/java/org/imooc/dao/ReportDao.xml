@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.imooc.dao.ReportDao">
+	
+	<select id="countOrder" resultType="java.util.HashMap">
+	select ber.name businesser_name,date_format(o.create_time,'%H') `hour` ,cast(count(1) as CHAR) `count`
+      from orders o
+      left join  business b on b.id = o.business_id
+      left join  businesser ber on ber.id = b.businesser_id
+      left join  sys_user user on ber.id = user.businesser_id
+	      <where>
+	        <if test="id!=null and id!=''">
+	         and ber.id=#{businesserId}
+	        </if>
+	        and  date_format(o.create_time,'%Y%m%d') = date_format(date_sub(now(),interval 0 day),'%Y%m%d')
+	        group by ber.name, date_format(o.create_time,'%H')
+	     </where>    
+	</select>
+	
+	  
+</mapper>

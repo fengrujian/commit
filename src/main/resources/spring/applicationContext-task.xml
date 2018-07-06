@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
+	<!-- 扫描task包 -->
+	<context:component-scan base-package="org.imooc.task"/>
+	
+	<!-- 启用定时任务 -->
+<!-- 	<task:scheduled-tasks> -->
+	    <!-- 可以配多组定时任务
+	         cron("* * * * * *")表达式第一个*是隔每一秒执行，第二个*是隔每一分执行
+	                         第三个*是隔每时秒执行，第四个*是隔每日秒执行，第五个*是隔每月秒执行，第六个*是隔每月的第几个星期秒执行
+	     -->
+<!-- 		<task:scheduled ref="BusinessTask" method="synNumber" cron="*/2 * * * * ?"/>	 -->
+<!-- 	</task:scheduled-tasks> -->
+
+<!-- 启用定时任务 -->
+<!-- 	<task:scheduled-tasks> -->
+<!-- 	<task:scheduled ref="BusinessTask" method="synNumber" cron="* * * * * ?"/> -->
+<!-- 		<task:scheduled ref="BusinessTask" method="synStar" cron="*/4 * * * * ?"/> -->
+<!-- 	</task:scheduled-tasks> -->
+
+</beans>

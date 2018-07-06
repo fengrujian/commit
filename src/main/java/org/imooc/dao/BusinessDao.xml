@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.imooc.dao.BusinessDao">
+	<resultMap type="Business" id="BusinessResultMap">
+		<id column="id" property="id"/>
+		<result column="img_file_name" property="imgFileName" />
+		<result column="title" property="title" />
+		<result column="subtitle" property="subtitle" />
+		<result column="price" property="price" />
+		<result column="distance" property="distance" />
+		<result column="number" property="number" />
+		<result column="desc" property="desc"/>
+		<result column="city" property="city"/>
+		<result column="category" property="category" />
+		<result column="star_total_num" property="starTotalNum" />
+		<result column="comment_total_num" property="commentTotalNum"/>
+		<result column="businesser_id" property="businesserId"/>
+		<result column="sv_star" property="sv_star"/>
+		<result column="memberid" property="memberid"/>
+		<result column="mask" property="mask"/>
+		<association property="cityDic" javaType="Dic">
+			<result column="city_name" property="name"/>
+		</association>
+		<association property="categoryDic" javaType="Dic">
+			<result column="category_name" property="name"/>
+		</association>	
+		<association property="businesser" javaType="Businesser">
+			<result column="name" property="name"/>
+			<result column="num" property="number"/>
+				<association property="user" javaType="User">
+				   <result column="user_name" property="name"/>
+			       <result column="ch_name" property="chName"/>
+			          <association property="group" javaType="Group">
+				         <result column="group_name" property="name"/>
+			          </association>
+			    </association>
+		</association>
+		
+		
+	</resultMap>
+	<!-- 映射收藏的商品 -->
+	<resultMap type="Collect_Business" id="CollectBusinessResultMap">
+		<id column="id" property="id"/>
+		<result column="img_file_name" property="imgFileName" />
+		<result column="title" property="title" />
+		<result column="subtitle" property="subtitle" />
+		<result column="price" property="price" />
+		<result column="distance" property="distance" />
+		<result column="number" property="number" />
+		<result column="desc" property="desc"/>
+		<result column="city" property="city"/>
+		<result column="category" property="category" />
+		<result column="star_total_num" property="starTotalNum" />
+		<result column="comment_total_num" property="commentTotalNum"/>
+		<result column="sv_star" property="sv_star"/>
+		<result column="memberid" property="memberid"/>
+		<result column="mask" property="mask"/>
+		<!-- 映射收藏的商品  的商品 -->
+		<association property="business" javaType="Business">			
+			   <!-- 映射收藏的商品  的商品 的商家 -->
+			   <association property="businesser" javaType="Businesser">
+			     <result column="name" property="name"/>
+			     <result column="num" property="number"/>
+			          <association property="user" javaType="User">
+			             <result column="user_name" property="name"/>
+			             <result column="user_ch_name" property="chName"/>
+			                 <association property="group" javaType="Group">
+			                    <result column="group_name" property="name"/>
+			                 </association>
+			          </association>
+		      </association>
+		</association>
+	</resultMap>
+	
+	
+	<insert id="insert">
+		insert into business(img_file_name,title,subtitle,price,distance,number,`desc`,city,category,star_total_num,comment_total_num,businesser_id)
+		values(#{imgFileName},#{title},#{subtitle},#{price},#{distance},#{number},#{desc},#{city},#{category},#{starTotalNum},#{commentTotalNum},#{businesserId})
+	</insert>
+	
+	<insert id="collectbusiness">
+		insert into collect_business(img_file_name,title,subtitle,price,distance,number,`desc`,city,category,star_total_num,sv_star,comment_total_num,memberid,mask)
+		values(#{imgFileName},#{title},#{subtitle},#{price},#{distance},#{number},#{desc},#{city},#{category},#{starTotalNum},#{sv_star},#{commentTotalNum},#{memberid},#{mask})
+	</insert>
+
+	<select id="selectById" resultMap="BusinessResultMap">	        
+       select b.id,b.img_file_name,b.title,b.subtitle,b.price,b.distance,b.number,b.`desc`,b.city,b.category,b.star_total_num,b.comment_total_num,b.sv_star,b.businesser_id, ber.name,ber.number num
+		from business b
+		     left join businesser ber on ber.id=b.businesser_id		     		   	
+		<where>
+			<if test="title != null and title != ''
+			 and subtitle != null and subtitle != ''
+			 and desc != null and desc != ''">
+				and
+				(b.title like '%' #{title} '%' or b.subtitle like '%' #{subtitle} '%' or b.`desc` like '%' #{desc} '%')
+			</if>
+			<if test="city != null and city != ''">
+				and b.city = #{city}
+			</if>
+			<if test="category != null and category != ''">
+				and b.category = #{category}
+			</if>
+			<if test="id != null and id != ''">
+				and b.id = #{id}
+			</if>
+		</where>
+		order by b.sv_star desc    <!-- 根据平均星级来降序 -->
+       
+	</select>
+	
+	<!-- 根据collect_business表的id和member_id是否有收藏过商品 -->
+	<select id="select_collectBusinessById" resultType="Business">
+	    select
+		id,img_file_name,title,subtitle,price,distance,number,`desc`,city,category,star_total_num,comment_total_num,mask,memberid
+		from collect_business where mask=#{mask} and memberid=#{memberid}
+	</select>
+	
+	<delete id="delcollectBusinessById">
+		delete from collect_business where mask=#{mask} and memberid=#{memberid}
+	</delete>
+	
+	
+	
+	<select id="search_Business" resultMap="BusinessResultMap">
+		select b.id,b.img_file_name,b.title,b.subtitle,b.price
+		,b.distance,b.number,b.`desc`,b.city,b.category,b.star_total_num,b.comment_total_num,
+		 b.businesser_id,ber.name,user.name user_name,user.ch_name ch_name,g.name group_name
+		,d_city.name city_name,d_category.name category_name
+		from
+		business b
+		left join dic d_city on b.city=d_city.code and
+		d_city.type='${@org.imooc.constant.DicTypeConst@CITY}'
+		left join dic d_category on
+		b.category=d_category.code and d_category.type='${@org.imooc.constant.DicTypeConst@CATEGORY}'
+		left join businesser ber on ber.id = b.businesser_id
+	    left join sys_user user on ber.id = user.businesser_id
+	    left join sys_group g on g.id = user.group_id
+		<where>
+			<if test="title != null and title != ''">
+				and b.title like '%' #{title} '%'
+			</if>
+			<if test="subtitle != null and subtitle != ''">
+				and b.subtitle like '%' #{subtitle} '%'
+			</if>
+			<if test="desc != null and desc != ''">
+				and b.`desc` like '%' #{desc} '%'
+			</if>
+			<if test="city != null and city != ''">
+				and b.city = #{city}
+			</if>
+			<if test="category != null and category != ''">
+				and b.category = #{category}
+			</if>
+		</where>
+		order by id
+	</select>
+	
+	
+	
+	<select id="selectLike" resultMap="BusinessResultMap">
+		select b.id,b.img_file_name,b.title,b.subtitle,b.price,b.distance,b.number,b.`desc`,b.city,b.category,b.star_total_num,b.comment_total_num,ber.name,ber.number num
+		from business b
+		     left join businesser ber on ber.id=b.businesser_id		     		   	
+		<where>
+			<if test="title != null and title != ''
+			 and subtitle != null and subtitle != ''
+			 and desc != null and desc != ''">
+				and
+				(b.title like '%' #{title} '%' or b.subtitle like '%' #{subtitle} '%' or b.`desc` like '%' #{desc} '%')
+			</if>
+			<if test="city != null and city != ''">
+				and b.city = #{city}
+			</if>
+			<if test="category != null and category != ''">
+				and b.category = #{category}
+			</if>
+		</where>
+		order by b.sv_star desc    <!-- 根据平均星级来降序 -->
+	</select>
+	
+	
+	<select id="getAllBusiness" resultType="Business">
+		select id,img_file_name,title,subtitle,price,distance,number,`desc`,city,category,star_total_num,comment_total_num
+		from business
+	</select>
+	
+	<select id="ishave" resultType="Business">
+		select *from business where businesser_id = #{businesserId}
+	</select>
+	
+	
+	<!-- 查询收藏的商品 -->
+	<select id="collectLikeByPage" resultMap="CollectBusinessResultMap">
+		select cb.id,cb.img_file_name,cb.title,cb.subtitle,cb.price
+		,cb.distance,cb.number,cb.`desc`,cb.city,cb.category
+		,cb.star_total_num,cb.comment_total_num,cb.sv_star,cb.mask,cb.memberid
+		,ber.name,ber.number num
+		from collect_business cb
+		     left join business b on cb.mask = b.id
+		     left join businesser ber on b.businesser_id =  ber.id
+		where cb.memberid = #{memberid}
+		order by cb.sv_star desc  
+	</select>
+
+	 <update id="updateStar">
+		    update business b,
+		    (select o.business_id ,sum(c.star) star_num ,count(*) comment_num from comment c ,orders o,member m,business b1,businesser ber
+		    where c.orders_id = o.id and o.member_id = m.id and o.business_id=b1.id and b1.businesser_id = ber.id
+		    group by o.business_id) t		    
+		    set b.star_total_num = t.star_num,b.comment_total_num =  t.comment_num
+		    where t.business_id=b.id
+	 </update>	
+	 
+	 <update id="updateNumber">	
+	      update business b,
+	      (select o.business_id,count(*) order_num from orders o,business b1 where b1.id=o.business_id  group by o.business_id) t
+	       set b.number = t.order_num where t.business_id=b.id
+	 </update>  
+	 
+	 <!-- 每次查询手擦查询订单数据  都会把商品的已售数量同步到收藏商品的已售数量   -->
+	 <update id="update_collect">	
+		update collect_business b set b.number = #{number} where mask=#{mask} and memberid=#{memberid}
+	 </update>	
+	 
+	 <update id="update">
+        update business set title=#{title},subtitle=#{subtitle},price=#{price},distance=#{distance},city=#{city},category=#{category},img_file_name=#{imgFileName},`desc`=#{desc} where id=#{id} 
+    </update>
+    
+    <update id="updatesv_star">
+        update business set sv_star=#{sv_star} where id=#{id} 
+    </update>
+    
+    
+	 <delete id="remove">
+       delete from business where id=#{id}
+    </delete>
+    
+    <select id="getfilenameById" resultType="java.lang.String">
+        select img_file_name from business where id=#{id}
+    </select>
+    
+    <select id="selectCollect_BusinessByMask" resultType="Collect_Business">
+        select * from collect_business where mask=#{id}
+    </select>
+    
+	 
+</mapper>

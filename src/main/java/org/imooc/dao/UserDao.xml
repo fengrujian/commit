@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.imooc.dao.UserDao">
+	<resultMap type="User" id="UserandGroupresultMap">
+	     <id column="id" property="id"/>
+	     <result column="ch_name" property="chName"/>
+	     <result column="user_name" property="name"/>
+	     <result column="password" property="password"/>
+	     <result column="group_id" property="groupId"/>
+	         <association property="group" javaType="Group">
+	            <id column="g_id" property="id"/>
+	            <result column="group_name" property="name"/>
+	         </association>
+	         <association property="businesser" javaType="Businesser">
+	            <result column="businesser_name" property="name"/>
+	         </association>
+	</resultMap>
+	
+	<select id="select" resultType="User">
+		select id,ch_name,name,group_id from sys_user t
+		<where>
+			<if test="name != null">
+				and t.name = #{name}
+			</if>
+			<if test="chName != null">
+				and t.ch_name=#{chName}
+			</if>
+			<if test="password != null">
+				and t.password = #{password}
+			</if>
+		</where>
+		<!--  是把ch_name的首字母的进行排序 ，使用utf-8编码    -->
+		order by convert(ch_name using gbk) collate gbk_chinese_ci
+	</select>
+	
+	<select id="selectByName" resultType="User">
+		select * from sys_user t where t.name = #{name}
+	</select>
+	
+	
+	<select id="selectByBusinesserId" resultType="User">
+		select * from sys_user t where t.businesser_id = #{businesserId}
+	</select>
+	
+	<select id="isoldpassword" resultType="User">
+		select id,ch_name,name,group_id from sys_user t
+		where t.name = #{name} and password = #{oldPassword_md5}
+	</select>
+	
+	<update id="UpdateUserPassword">
+		update sys_user set  password = #{newPassword_md5} where name =#{name}
+	</update>
+	
+	<insert id="insert">
+		insert into sys_user(name,ch_name,`password`)
+		select #{name},#{chName},#{password} from dual
+		where not exists(select 1 from sys_user where name=#{name})
+	</insert>
+	
+	<insert id="insertuser">
+		insert into sys_user(name,ch_name,`password`,group_id,businesser_id)
+		select #{name},#{chName},#{password},#{groupId} ,#{businesserId}   from dual
+		where not exists(select 1 from sys_user where name=#{name})
+	</insert>
+	
+	<insert id="register">
+		insert into sys_user(name,ch_name,`password`,group_id)
+		select #{name},#{chName},#{password},#{groupId} from dual
+		where not exists(select 1 from sys_user where name=#{name})
+	</insert>
+	
+	<select id="selectById" resultType="User">
+		select id,ch_name,name,group_id from sys_user where id = #{_parameter}
+	</select>
+	
+	<update id="update">
+		update sys_user
+		<set>
+			<if test="name != null">
+				name = #{name},
+			</if>
+			<if test="chName != null">
+				ch_name=#{chName},
+			</if>
+			<if test="password != null">
+				password = #{password},
+			</if>
+			<if test="groupId != null">
+				group_id = #{groupId},
+			</if>
+		</set>
+		where id=#{id}
+		<if test="name != null">
+			and not exists(select 1 from (select 1 from sys_user where name=#{name} and id != #{id})a)
+		</if>
+		<!-- and not exists(查询不到，该sql才执行成功，查询到的话该sql就执行不成功了) -->
+	</update>
+	
+	
+	<delete id="delete">
+		delete from sys_user where id=#{_parameter}
+	</delete>
+	
+	<select id="selectUserandGroupByName" resultMap="UserandGroupresultMap">
+		select user.id,user.ch_name,user.name user_name,user.group_id,g.id g_id,g.name group_name
+		from sys_user user
+		     left join  sys_group g on g.id = user.group_id
+		     where user.name = #{name}
+	</select>
+	
+	<select id="getUserandGroupById" resultMap="UserandGroupresultMap">
+		select user.id,user.ch_name,user.name user_name,user.group_id,g.id g_id,g.name group_name
+		from sys_user user
+		     left join  sys_group g on g.id = user.group_id
+		     where user.id = #{id}
+	</select>
+	
+	<!-- 后台维护 -->
+	<select id="searchByPage" resultMap="UserandGroupresultMap">
+        select user.id,user.name user_name,user.password,user.ch_name,g.name group_name,ber.name businesser_name
+        from sys_user user
+        left join  sys_group g on g.id = user.group_id
+        left join  businesser ber on ber.id = user.businesser_id
+          <where>
+             <if test="name!=null and name!=''">
+                user.name like '%' #{name} '%'
+             </if>
+          </where>
+    </select>
+	
+	
+</mapper>

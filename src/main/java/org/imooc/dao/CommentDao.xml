@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.imooc.dao.CommentDao">
+	
+	<resultMap type="Comment" id="CommentResultMap">
+		<id column="id" property="id"/>
+		<result column="orders_id" property="ordersId"/>
+		<result column="comment" property="comment"/>
+		<result column="comment_service" property="comment_service"/>
+		<result column="star" property="star"/>
+		<result column="create_time" property="createTime"/>
+		<association property="orders" resultMap="org.imooc.dao.OrdersDao.OrdersResultMap_to"/>
+	</resultMap>
+
+	<insert id="insert">
+		insert into comment(orders_id,comment,comment_service,star,create_time)
+		values(#{ordersId},#{comment},#{comment_service},#{star},#{createTime})
+	</insert>
+	
+	<select id="selectByPage" resultMap="CommentResultMap">
+		select c.id,c.orders_id,c.comment,c.comment_service,c.star,c.create_time,m.phone,b.title,ber.name
+		from comment c,orders o,business b,member m,businesser ber
+		where c.orders_id = o.id and o.business_id=b.id
+		and o.member_id=m.id
+		and b.businesser_id = ber.id
+		and b.id = #{orders.business.id}
+		order by c.star desc
+	</select>
+	
+	<!-- 查询评论 -->
+	<select id="search_comment" resultMap="CommentResultMap1">
+        select c.id,c.orders_id,c.star,c.comment,c.comment_service, c.create_time,o.business_id,
+             o.member_id,m.phone,b.title,ber.name businesser_name,
+             user.name user_name,user.ch_name user_ch_name,g.name group_name
+             from comment c
+             left join orders o on c.orders_id = o.id 
+             left join business b on o.business_id = b.id
+             left join member m on m.id= o.member_id
+             left join businesser ber on ber.id = b.businesser_id
+             left join sys_user user on ber.id = user.businesser_id
+             left join sys_group g on g.id = user.group_id
+            <where>
+              <if test="orders.memberId!=null and orders.memberId!=''">
+                 o.member_id = #{orders.memberId}
+              </if>
+            </where>
+     </select>
+     
+     <resultMap type="Comment" id="CommentResultMap1">
+		<id column="id" property="id"/>
+		<result column="orders_id" property="ordersId"/>		
+		<result column="star" property="star"/>
+		<result column="comment" property="comment"/>
+		<result column="comment_service" property="comment_service"/>
+		<result column="create_time" property="createTime"/>
+	    <association property="orders" javaType="Orders">		
+			<result column="business_id" property="businessId"/>
+			<result column="member_id" property="memberId"/>			
+		    <result column="create_time" property="create_time" />
+		    <association property="business" javaType="Business">
+				<result column="title" property="title"/>
+				  <association property="businesser" javaType="Businesser">
+				     <result column="businesser_name" property="name"/>
+				           <association property="user" javaType="User">
+				               <result column="user_name" property="name"/>
+				               <result column="user_ch_name" property="chName"/>
+				                  <association property="group" javaType="Group">
+				                     <result column="group_name" property="name"/>
+			                      </association>
+			               </association>
+			      </association>
+			</association>
+			<association property="member" javaType="Member">
+				<result column="phone" property="phone"/>
+			</association>
+	    </association>
+	</resultMap>
+     
+    
+	
+	
+</mapper>

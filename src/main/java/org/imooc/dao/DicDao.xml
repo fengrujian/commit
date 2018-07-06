@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.imooc.dao.DicDao">
+	
+	<select id="select" resultType="Dic">
+		select * from dic where type=#{type}
+		order by weight
+	</select>
+	
+	<select id="searchByPage" resultType="Dic">
+		select * from dic 
+		 <where>
+             <if test="name!=null and name!=''">
+                name like '%' #{name} '%'
+             </if>
+         </where>
+		order by weight
+	</select>
+	
+	<insert id="insertdic" parameterType="Dic">
+       insert into dic(type,code,name,weight) values(#{type},#{code},#{name},#{weight})
+     </insert>
+     
+	 <select id="selectById" resultType="Dic">
+		select * from dic where id=#{id}
+	</select>
+	
+	<update id="update">
+        update dic set name=#{name},code=#{code} where id=#{id} 
+    </update>
+	
+	 <delete id="remove">
+       delete from dic where id=#{id}
+    </delete>
+	
+</mapper>

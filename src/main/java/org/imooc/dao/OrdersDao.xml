@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.imooc.dao.OrdersDao">
+
+	<resultMap type="Orders" id="OrdersResultMap">
+		<id column="id" property="id"/>
+		<result column="comment_state" property="commentState" />
+		<result column="price" property="price" />
+		<association property="business" javaType="Business">
+			<result column="img_file_name" property="imgFileName"/>
+			<result column="title" property="title"/>
+			<result column="number" property="number"/>
+			  <association property="businesser" javaType="Businesser">
+			     <result column="name" property="name"/>
+		      </association>
+		</association>
+		<association property="member" javaType="Member">
+			<result column="phone" property="phone"/>
+		</association>
+	</resultMap>
+	
+	
+	
+	<resultMap type="Orders" id="OrdersResultMap_to">
+<!-- 		<id column="id" property="id"/> -->
+		<result column="comment_state" property="commentState" />
+		<result column="price" property="price" />
+		<result column="business_id" property="businessId"/>
+		<result column="member_id" property="memberId"/>
+		<association property="business" javaType="Business">
+<!-- 			<id column="id1" property="id"/> -->
+			<result column="img_file_name" property="imgFileName"/>
+			<result column="title" property="title"/>
+			<result column="number" property="number"/>
+			   	     <!-- 一个商品对应一个商家  -->
+			  <association property="businesser" javaType="Businesser">
+			     <result column="name" property="name"/>
+		      </association>
+		</association>
+		<association property="member" javaType="Member">
+<!-- 		    <id column="id2" property="id"/> -->
+			<result column="phone" property="phone"/>
+		</association>
+	</resultMap>
+	
+    <!-- 下单  插入一条订单数据 -->
+	<insert id="insert">
+		insert into orders(business_id,member_id,num,comment_state,price,create_time)
+		 values(#{businessId},#{memberId},#{num},#{commentState},#{price},#{create_time})
+	</insert>
+	<!-- 下单的时候就更新了上次的下单时间 -->
+	<update id="update_ordertime" parameterType="record_order_createtime">
+	     update record_order_createtime r
+	     set r.record_order_time = #{record_order_time},r.create_time = #{create_time}
+	</update>
+	
+	<select id="selectById" resultType="Orders">
+		select id,business_id,member_id,num,comment_state,price
+		from orders where id=#{_parameter}
+	</select>
+	
+	<update id="update">
+		update orders
+		<set>
+			<if test="commentState != null">
+				comment_state = #{commentState},
+			</if>
+		</set>
+		where id=#{id}
+	</update>
+	
+	<select id="select" resultMap="OrdersResultMap">
+		select o.id,o.comment_state,o.price,b.img_file_name,b.title,b.number,ber.name
+		from orders o,business b,businesser ber where o.business_id=b.id and b.businesser_id=ber.id and o.member_id = #{memberId}
+	</select>
+	
+	<select id="selectOrdersByBusinessId" resultType="Orders">
+		select *from orders where business_id = #{businessId}
+	</select>
+	
+	<!-- 查询订单列表 -->
+	<select id="search_Orders" resultMap="OrdersResultMap_">
+        select o.id,o.business_id,o.member_id,o.num,o.comment_state,o.price,o.create_time,
+               b.title,m.phone,ber.name businesser_name,user.name user_name,user.ch_name user_ch_name,
+               g.name group_name
+               from orders o
+               left join business b on b.id = o.business_id
+               left join member m on m.id = o.member_id
+               left join businesser ber on ber.id = b.businesser_id
+               left join sys_user user on ber.id = user.businesser_id
+               left join sys_group g on g.id = user.group_id
+          <where>
+             <if test="memberId!=null and memberId!=''">
+                o.member_id = #{memberId}
+             </if>
+          </where>
+     </select>
+     
+     <resultMap type="OrdersDto" id="OrdersResultMap_">
+		<id column="id" property="id"/>
+		<result column="business_id" property="businessId"/>
+		<result column="member_id" property="memberId"/>
+		<result column="num" property="num"/>
+		<result column="comment_state" property="commentState"/>
+		<result column="price" property="price" />
+	    <result column="create_time" property="create_time" />
+	    <association property="business" javaType="Business">
+			<result column="title" property="title"/>
+			  <association property="businesser" javaType="Businesser">
+			     <result column="businesser_name" property="name"/>
+			           <association property="user" javaType="User">
+			               <result column="user_name" property="name"/>
+			               <result column="user_ch_name" property="chName"/>
+			                  <association property="group" javaType="Group">
+			                     <result column="group_name" property="name"/>
+		                      </association>
+		               </association>
+		      </association>
+		</association>
+		<association property="member" javaType="Member">
+			<result column="phone" property="phone"/>
+		</association>
+	</resultMap>
+     
+     
+     
+</mapper>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.imooc.dao.AdDao">
+     <!-- 插入广告 -->
+     <insert id="insert" parameterType="adDto">
+       insert into ad(title,img_file_name,link,weight) values(#{title},#{imgFileName},#{link},#{weight})
+     </insert>
+      
+     <select id="searchByPage" resultType="ad">
+        select id,title,img_file_name,link,weight from ad
+          <where>
+             <if test="title!=null and title!=''">
+                title like '%' #{title} '%'
+             </if>
+          </where>
+          order by weight desc,id
+     </select>
+     
+     <!-- 根据id修改 -->
+     <select id="selectById" resultType="ad">
+		select id,title,img_file_name,link,weight from ad where id=#{id}
+	</select>
+    
+    <update id="update">
+        update ad set title=#{title},img_file_name=#{imgFileName},link=#{link},weight=#{weight} where id=#{id} 
+    </update>
+    
+    <delete id="remove">
+       delete from ad where id=#{id}
+    </delete>
+    
+    <select id="getfilenameById" resultType="java.lang.String">
+        select img_file_name from ad where id=#{id}
+    </select>
+    
+</mapper>
