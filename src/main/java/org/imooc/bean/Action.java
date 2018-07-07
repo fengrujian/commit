@@ -9,6 +9,7 @@ public class Action {
 	private String method;
     private String s;
     private String d;
+    private String ss;
 	
 	public String getName() {
 		return name;
