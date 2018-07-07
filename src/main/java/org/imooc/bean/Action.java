@@ -8,6 +8,7 @@ public class Action {
 	private Long menuId;
 	private String method;
     private String s;
+    private String d;
 	
 	public String getName() {
 		return name;
