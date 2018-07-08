@@ -7,10 +7,7 @@ public class Action {
 	private String url;
 	private Long menuId;
 	private String method;
-    private String s;
-    private String d;
-    private String ss;
-	
+   
 	public String getName() {
 		return name;
 	}
